@@ -9,20 +9,45 @@
 #   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
 module.exports = (robot) ->
-  brainKey = 'kakei'
+  key_kurasu = 'kurasu'  
+
+
 
   robot.hear /くらす(.*)/i, (res) ->
     spendMoney = res.match[1]
-    kakei = getKakei()
-    robot.brain.set brainKey, spendMoney
+    kurasu = parseInt(getKakei(key_kurasu),10) - parseInt(spendMoney,10)
+    robot.brain.set key_kurasu, kurasu
     res.send """
-            「くらす」に#{spendMoney}円を使いました。残高は、...
-            「くらす」は#{kakei}です。「
-            「食べる」は..です。
+            「くらす」に#{spendMoney}円を使いました。
+            --残高---------------------
+            「くらす」は#{kurasu}です。
+            --------------------------
             """
 
-  getKakei = ->
-    robot.brain.get(brainKey) ? []
+  robot.hear /clear/i, (res) ->
+    robot.brain.set key_kurasu, 0
+    robot.brain.set key_taberu, 0
+    robot.brain.set key_others, 0
+
+    kurasu = parseInt(getKakei(key_kurasu),10)
+
+    res.send """
+            「くらす」は#{kurasu}です。
+            """    
+
+  robot.hear /set(.*)/i, (res) ->
+    robot.brain.set key_kurasu, res.match[1]
+
+    kurasu = parseInt(getKakei(key_kurasu),10)
+
+    res.send """
+            予算設定しました！
+            「くらす」は#{kurasu}です。
+            """    
+
+
+  getKakei = (key) ->
+    robot.brain.get(key) ? []
 
   # robot.hear /badger/i, (res) ->
   #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
