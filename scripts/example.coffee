@@ -11,7 +11,34 @@
 module.exports = (robot) ->
   key_kurasu = 'kurasu'  
 
+  # 変数定義
+  stday           = ''  #開始日
+  numTurms        = ''  #期数
+  numDays         = ''  #日数
 
+  itemNames       = ['A','B','C']  #品目名
+
+  phase           = []  #基毎に予算、実績を格納
+  budgets         = []  #予算を格納
+  actuals         = []  #実績を格納
+
+  # 内部的な変数
+  thisPhase       = 3   #いまは第#phase
+
+  # 予算設定[1.5,5,30]のような入力を受けて、結果を返す
+  robot.hear /予算設定[(.*)]/i, (res) ->
+    input = res.match[1]
+    #,の区切りを切る
+    #1000倍して
+    #予算に格納する
+    budgets = [15000,50000,30000]
+    #今月の予算に格納する
+    phase[thisPhase] = budgets
+    #DBへ格納する
+    #for budet : budets(
+    #  robot.brain.set key budget
+    #)
+    res.send "予算設定しました"
 
   robot.hear /くらす(.*)/i, (res) ->
     spendMoney = res.match[1]
@@ -48,6 +75,10 @@ module.exports = (robot) ->
 
   getKakei = (key) ->
     robot.brain.get(key) ? []
+
+  robot.hear /だね/i, (res) ->
+    res.send "そうだね。"
+
 
   # robot.hear /badger/i, (res) ->
   #   res.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
