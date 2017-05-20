@@ -10,21 +10,6 @@
 
 module.exports = (robot) ->
 
-#  robot.hear /connect/i, (res) ->
-#    url =  "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
-#    robot.http(url)
-#      .get() (err, httpRes, body) ->
-#        if err
-#          res.send "Encountered an error :( #{err}"
-#          return
-#        url =  httpRes.headers.location
-#        robot.http(url)
-#          .get() (err, httpRes, body) ->
-#            res.send """
-#                    ---残りのお金---
-#                    #{body}
-#                    """
-
   robot.hear /予算/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=badget"
@@ -37,21 +22,58 @@ module.exports = (robot) ->
         robot.http(url)
           .get() (err, httpRes, body) ->
             data = JSON.parse body
-            res.send """
-                    ---予算---
-                    #{data.category[0]} : #{data.badget[0]}
-                    #{data.category[1]} : #{data.badget[1]}
-                    #{data.category[2]} : #{data.badget[2]}
-                    #{data.category[3]} : #{data.badget[3]}
-                    """
+            retStr = "---予算---" + '\n' ;
+            for cate, index in data.category
+              retStr = retStr + "#{cate} : #{data.badget[index]}"  + '\n'
+            res.send retStr
 
+  robot.hear /実績/i, (res) ->
+    url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    url = url + "?type=actual"
+    robot.http(url)
+      .get() (err, httpRes, body) ->
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            retStr = "---実績---" + '\n' ;
+            for cate, index in data.category
+              retStr = retStr + "#{cate} : #{data.actual[index]}"  + '\n'
+            res.send retStr
 
-# {httpRes.statusCode}
+  robot.hear /残り/i, (res) ->
+    url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    url = url + "?type=remain"
+    robot.http(url)
+      .get() (err, httpRes, body) ->
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            retStr = "---残り---" + '\n' ;
+            for cate, index in data.category
+              retStr = retStr + "#{cate} : #{data.remain[index]}"  + '\n'
+            res.send retStr
 
-
-
-
-
+  robot.hear /(.*)/i, (res) ->
+    postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    paramAry = res.match[0].split " "
+    data = JSON.stringify({
+        "method": "actualInput","params": {"item": [paramAry[0]],"qty": [paramAry[1]],"note": [paramAry[2]],"phase": 1}
+      })
+    #data = JSON.stringify({
+    #    "method": "actualInput","params": {"item": ["生きる"],"qty": ["180"],"note": ["うどん"],"phase": 1}
+    #  })
+    robot.http(postURL)
+      .header('Content-Type', 'application/json')
+      .post(data) (err, res, body) ->
+        # your code here
 
 
 
