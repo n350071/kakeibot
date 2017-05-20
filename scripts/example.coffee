@@ -9,75 +9,52 @@
 #   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
 module.exports = (robot) ->
-  key_kurasu = 'kurasu'  
 
-  # 変数定義
-  stday           = ''  #開始日
-  numTurms        = ''  #期数
-  numDays         = ''  #日数
+#  robot.hear /connect/i, (res) ->
+#    url =  "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+#    robot.http(url)
+#      .get() (err, httpRes, body) ->
+#        if err
+#          res.send "Encountered an error :( #{err}"
+#          return
+#        url =  httpRes.headers.location
+#        robot.http(url)
+#          .get() (err, httpRes, body) ->
+#            res.send """
+#                    ---残りのお金---
+#                    #{body}
+#                    """
 
-  itemNames       = ['A','B','C']  #品目名
-
-  phase           = []  #基毎に予算、実績を格納
-  budgets         = []  #予算を格納
-  actuals         = []  #実績を格納
-
-  # 内部的な変数
-  thisPhase       = 3   #いまは第#phase
-
-  # 予算設定[1.5,5,30]のような入力を受けて、結果を返す
-  robot.hear /予算設定[(.*)]/i, (res) ->
-    input = res.match[1]
-    #,の区切りを切る
-    #1000倍して
-    #予算に格納する
-    budgets = [15000,50000,30000]
-    #今月の予算に格納する
-    phase[thisPhase] = budgets
-    #DBへ格納する
-    #for budet : budets(
-    #  robot.brain.set key budget
-    #)
-    res.send "予算設定しました"
-
-  robot.hear /くらす(.*)/i, (res) ->
-    spendMoney = res.match[1]
-    kurasu = parseInt(getKakei(key_kurasu),10) - parseInt(spendMoney,10)
-    robot.brain.set key_kurasu, kurasu
-    res.send """
-            「くらす」に#{spendMoney}円を使いました。
-            --残高---------------------
-            「くらす」は#{kurasu}です。
-            --------------------------
-            """
-
-  robot.hear /clear/i, (res) ->
-    robot.brain.set key_kurasu, 0
-    robot.brain.set key_taberu, 0
-    robot.brain.set key_others, 0
-
-    kurasu = parseInt(getKakei(key_kurasu),10)
-
-    res.send """
-            「くらす」は#{kurasu}です。
-            """    
-
-  robot.hear /set(.*)/i, (res) ->
-    robot.brain.set key_kurasu, res.match[1]
-
-    kurasu = parseInt(getKakei(key_kurasu),10)
-
-    res.send """
-            予算設定しました！
-            「くらす」は#{kurasu}です。
-            """    
+  robot.hear /予算/i, (res) ->
+    url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    url = url + "?type=badget"
+    robot.http(url)
+      .get() (err, httpRes, body) ->
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            res.send """
+                    ---予算---
+                    #{data.category[0]} : #{data.badget[0]}
+                    #{data.category[1]} : #{data.badget[1]}
+                    #{data.category[2]} : #{data.badget[2]}
+                    #{data.category[3]} : #{data.badget[3]}
+                    """
 
 
-  getKakei = (key) ->
-    robot.brain.get(key) ? []
+# {httpRes.statusCode}
 
-  robot.hear /だね/i, (res) ->
-    res.send "そうだね。"
+
+
+
+
+
+
+
 
 
   # robot.hear /badger/i, (res) ->
@@ -174,3 +151,70 @@ module.exports = (robot) ->
   # robot.respond /sleep it off/i, (res) ->
   #   robot.brain.set 'totalSodas', 0
   #   res.reply 'zzzzz'
+
+
+
+#  key_kurasu = 'kurasu'  
+#
+#  # 変数定義
+#  stday           = ''  #開始日
+#  numTurms        = ''  #期数
+#  numDays         = ''  #日数
+#
+#  itemNames       = ['A','B','C']  #品目名
+#
+#  phase           = []  #基毎に予算、実績を格納
+#  budgets         = []  #予算を格納
+#  actuals         = []  #実績を格納
+#  specialBudet    = 0
+#  specialAcutual  = 0
+#
+#  # 内部的な変数
+#  thisPhase       = 3   #いまは第#phase?
+#
+#  # 予算設定[1.5,5,30]のような入力を受けて、結果を返す
+#  robot.hear /予算設定[(.*)]/i, (res) ->
+#    input = res.match[1]
+#    #,の区切りを切る
+#    #1000倍して
+#    #予算に格納する
+#    budgets = [15000,50000,30000]
+#    #今月の予算に格納する
+#    phase[thisPhase] = budgets
+#    #DBへ格納する
+#    #for budet : budets(
+#    #  robot.brain.set key budget
+#    #)
+#    res.send "予算設定しました"
+#
+#  robot.hear /くらす(.*)/i, (res) ->
+#    spendMoney = res.match[1]
+#    kurasu = parseInt(getKakei(key_kurasu),10) - parseInt(spendMoney,10)
+#    robot.brain.set key_kurasu, kurasu
+#    res.send """
+#            「くらす」に#{spendMoney}円を使いました。
+#            --残高---------------------
+#            「くらす」は#{kurasu}です。
+#            --------------------------
+#            """
+#
+#  robot.hear /clear/i, (res) ->
+#    robot.brain.set key_kurasu, 0
+#    robot.brain.set key_taberu, 0
+#    robot.brain.set key_others, 0
+#
+#    kurasu = parseInt(getKakei(key_kurasu),10)
+#
+#    res.send """
+#            「くらす」は#{kurasu}です。
+#            """    
+#
+#  robot.hear /set(.*)/i, (res) ->
+#    robot.brain.set key_kurasu, res.match[1]
+#
+#    kurasu = parseInt(getKakei(key_kurasu),10)
+#
+#    res.send """
+#            予算設定しました！
+#            「くらす」は#{kurasu}です。
+#            """    
