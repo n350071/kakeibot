@@ -64,16 +64,22 @@ module.exports = (robot) ->
   robot.hear /(.*)/i, (res) ->
     postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     paramAry = res.match[0].split " "
-    data = JSON.stringify({
+    sendData = JSON.stringify({
         "method": "actualInput","params": {"item": [paramAry[0]],"qty": [paramAry[1]],"note": [paramAry[2]],"phase": 1}
       })
-    #data = JSON.stringify({
+    #sendData = JSON.stringify({
     #    "method": "actualInput","params": {"item": ["生きる"],"qty": ["180"],"note": ["うどん"],"phase": 1}
     #  })
     robot.http(postURL)
       .header('Content-Type', 'application/json')
-      .post(data) (err, res, body) ->
-        # your code here
+      .post(sendData) (err, httpRes, body) ->
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            if(data.status == "success")
+              res.send "#{data.message}"
+
 
 
 
