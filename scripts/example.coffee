@@ -78,7 +78,12 @@ module.exports = (robot) ->
           .get() (err, httpRes, body) ->
             data = JSON.parse body
             if(data.status == "success")
-              res.send "#{data.message}"
+              #retStr = "#{data.message}" + '\n' +  "状況：#{data.balance.qty}円の#{data.balance.plusMinus}です" 
+              retStr = "#{data.message}" + '\n' + "---状況---"
+              for retJSON in data.retJSONs
+                retStr = retStr + '\n' + "#{retJSON.itemName} : #{retJSON.balance}  #{retJSON.redBlack}"
+              res.send retStr
+
 
 
 
