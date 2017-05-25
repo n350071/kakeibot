@@ -84,7 +84,7 @@ module.exports = (robot) ->
               retStr = "#{data.message}" + '\n' + "---状況---"
               for retJSON in data.retJSONs
                 retStr = retStr + '\n' + "#{retJSON.itemName} : #{retJSON.balance}  #{retJSON.redBlack}"
-              res.send retStr + "\n #{typeof(parseInt(paramAry[1]))}"
+              res.send retStr
 
 
 
