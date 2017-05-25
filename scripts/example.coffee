@@ -67,9 +67,11 @@ module.exports = (robot) ->
     sendData = JSON.stringify({
         "method": "actualInput","params": {"item": [paramAry[0]],"qty": [paramAry[1]],"note": [paramAry[2]],"phase": 1}
       })
-    #sendData = JSON.stringify({
-    #    "method": "actualInput","params": {"item": ["生きる"],"qty": ["180"],"note": ["うどん"],"phase": 1}
-    #  })
+    # 引数が3つでないときは、反応しない
+    if paramAry.length != 3 then return
+    # 量が数値でない場合は、反応しない
+    if typeof(parseInt(paramAry[1])) isnt 'number' then return
+    #if typeof paramAry[2] != 'number' then return
     robot.http(postURL)
       .header('Content-Type', 'application/json')
       .post(sendData) (err, httpRes, body) ->
@@ -82,7 +84,7 @@ module.exports = (robot) ->
               retStr = "#{data.message}" + '\n' + "---状況---"
               for retJSON in data.retJSONs
                 retStr = retStr + '\n' + "#{retJSON.itemName} : #{retJSON.balance}  #{retJSON.redBlack}"
-              res.send retStr
+              res.send retStr + "\n #{typeof(parseInt(paramAry[1]))}"
 
 
 
