@@ -70,8 +70,7 @@ module.exports = (robot) ->
     # 引数が3つでないときは、反応しない
     if paramAry.length != 3 then return
     # 量が数値でない場合は、反応しない
-    if typeof(parseInt(paramAry[1])) isnt 'number' then return
-    #if typeof paramAry[2] != 'number' then return
+    if String(Math.floor(Number(paramAry[1]))) != paramAry[1] then return
     robot.http(postURL)
       .header('Content-Type', 'application/json')
       .post(sendData) (err, httpRes, body) ->
