@@ -61,6 +61,51 @@ module.exports = (robot) ->
               retStr = retStr + "#{cate} : #{data.remain[index]}"  + '\n'
             res.send retStr
 
+  robot.hear /状況/i, (res) ->
+    url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    url = url + "?type=status"
+    robot.http(url)
+      .get() (err, httpRes, body) ->
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            retStr = "----  残り = 予算 - 実績  ----"
+            for status in data.statusJSON
+              retStr = retStr + '\n' + "#{status.itemName} : *#{status.remain}* = #{status.badget} - #{status.actual}"
+            retStr = retStr + '\n' + "----  現在の状況  ----"
+            for status in data.statusJSON
+              retStr = retStr + '\n' + "#{status.itemName} : #{status.balance}  #{status.redBlack} (１日あたりの予算は:#{status.badgetPerDay}円です)"
+            retStr = retStr + '\n' + "----  くりこし金  ----"
+            retStr = retStr + '\n' + "#{data.cOver}円"
+            res.send retStr
+
+
+  robot.hear /ログ(.*)/i, (res) ->
+    url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    url = url + "?type=log"
+    # (.*)が数値のときのみ、引数に追加する
+    if String(Math.floor(Number(res.match[1]))) == res.match[1]
+      url = url + "&logN=" + res.match[1]
+    robot.http(url)
+      .get() (err, httpRes, body) ->
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            retStr = "----  買い物ログ  ----"
+            for log in data.logJSONAry
+              retStr = retStr + '\n' + "#{log.date}  --- #{log.itemName} >>  #{log.qty}円  #{log.note}"
+            res.send retStr
+
+
+
   robot.hear /(.*)/i, (res) ->
     postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     paramAry = res.match[0].split " "
@@ -80,14 +125,31 @@ module.exports = (robot) ->
             data = JSON.parse body
             if(data.status == "success")
               #retStr = "#{data.message}" + '\n' +  "状況：#{data.balance.qty}円の#{data.balance.plusMinus}です" 
-              retStr = "#{data.message}" + '\n' + "---状況---"
+              retStr = "#{data.message}" + '\n' + "---現在の状況---"
               for retJSON in data.retJSONs
-                retStr = retStr + '\n' + "#{retJSON.itemName} : #{retJSON.balance}  #{retJSON.redBlack}"
+                retStr = retStr + '\n' + "#{retJSON.itemName} : #{retJSON.balance}  #{retJSON.redBlack}  (１日あたりの予算は:#{retJSON.badgetPerDay}円です)"
               res.send retStr
 
 
 
-
+  robot.respond /間違え/i, (res) ->
+    postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    sendData = JSON.stringify({
+        "method": "actualDelete"
+      })
+    robot.http(postURL)
+      .header('Content-Type', 'application/json')
+      .post(sendData) (err, httpRes, body) ->
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            if(data.status == "success")
+              #retStr = "#{data.message}" + '\n' +  "状況：#{data.balance.qty}円の#{data.balance.plusMinus}です" 
+              retStr = "#{data.message}" + '\n' + "---買い物ログ---"
+              for log in data.logJSONAry
+                retStr = retStr + '\n' + "#{log.date}  --- #{log.itemName} >>  #{log.qty}円  #{log.note}"
+              res.send retStr
 
 
 
