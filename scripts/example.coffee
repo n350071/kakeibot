@@ -151,6 +151,41 @@ module.exports = (robot) ->
                 retStr = retStr + '\n' + "#{log.date}  --- #{log.itemName} >>  #{log.qty}円  #{log.note}"
               res.send retStr
 
+  robot.respond /表示数変更(.*)/i, (res) ->
+    postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
+    # (.*)が数値のときのみ、実行する
+    if String(Math.floor(Number(res.match[1]))) != res.match[1] then return
+    sendData = JSON.stringify({
+        "method": "setDispItemCount"
+        "params": {
+          "dispCount" : res.match[1]
+        }
+      })
+    robot.http(postURL)
+      .header('Content-Type', 'application/json')
+      .post(sendData) (err, httpRes, body) ->
+        url =  httpRes.headers.location
+        robot.http(url)
+          .get() (err, httpRes, body) ->
+            data = JSON.parse body
+            if(data.status == "success")
+              #retStr = "#{data.message}" + '\n' +  "状況：#{data.balance.qty}円の#{data.balance.plusMinus}です" 
+              retStr = "#{data.message}"
+              res.send retStr
+
+
+  robot.respond /使い方|ヘルプ|help/i, (res) ->
+    res.send '''
+              ---  このように呼び出すと応答します  ---
+              @kakeibot 予算
+              @kakeibot 実績
+              @kakeibot 残り
+              @kakeibot 状況
+              @kakeibot ログ(.*)
+              @kakeibot 間違え
+              @kakeibot 表示数変更(.*)
+              ※(.*)には数字を入れます
+            '''
 
 
   # robot.hear /badger/i, (res) ->
