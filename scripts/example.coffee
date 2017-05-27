@@ -10,7 +10,7 @@
 
 module.exports = (robot) ->
 
-  robot.hear /予算/i, (res) ->
+  robot.respond /予算/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=badget"
     robot.http(url)
@@ -27,7 +27,7 @@ module.exports = (robot) ->
               retStr = retStr + "#{cate} : #{data.badget[index]}"  + '\n'
             res.send retStr
 
-  robot.hear /実績/i, (res) ->
+  robot.respond /実績/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=actual"
     robot.http(url)
@@ -44,7 +44,7 @@ module.exports = (robot) ->
               retStr = retStr + "#{cate} : #{data.actual[index]}"  + '\n'
             res.send retStr
 
-  robot.hear /残り/i, (res) ->
+  robot.respond /残り/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=remain"
     robot.http(url)
@@ -61,7 +61,7 @@ module.exports = (robot) ->
               retStr = retStr + "#{cate} : #{data.remain[index]}"  + '\n'
             res.send retStr
 
-  robot.hear /状況/i, (res) ->
+  robot.respond /状況/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=status"
     robot.http(url)
@@ -84,7 +84,7 @@ module.exports = (robot) ->
             res.send retStr
 
 
-  robot.hear /ログ(.*)/i, (res) ->
+  robot.respond /ログ(.*)/i, (res) ->
     url = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     url = url + "?type=log"
     # (.*)が数値のときのみ、引数に追加する
@@ -106,16 +106,16 @@ module.exports = (robot) ->
 
 
 
-  robot.hear /(.*)/i, (res) ->
+  robot.respond /(.*)/i, (res) ->
     postURL = "https://script.google.com/macros/s/AKfycbyqYYjmdd-TnNz1mzy_c3zOLpHGHKd-jSYuqqXo71m-s_zqxIYH/exec"
     paramAry = res.match[0].split " "
     sendData = JSON.stringify({
-        "method": "actualInput","params": {"item": [paramAry[0]],"qty": [paramAry[1]],"note": [paramAry[2]],"phase": 1}
+        "method": "actualInput","params": {"item": [paramAry[1]],"qty": [paramAry[2]],"note": [paramAry[3]],"phase": 1}
       })
     # 引数が3つでないときは、反応しない
-    if paramAry.length != 3 then return
+    if paramAry.length != 4 then return
     # 量が数値でない場合は、反応しない
-    if String(Math.floor(Number(paramAry[1]))) != paramAry[1] then return
+    if String(Math.floor(Number(paramAry[2]))) != paramAry[2] then return
     robot.http(postURL)
       .header('Content-Type', 'application/json')
       .post(sendData) (err, httpRes, body) ->
